@@ -9,11 +9,26 @@ from langchain.memory import ConversationBufferMemory
 from langchain.agents import AgentExecutor
 from typing import Any, List, Union
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
 
 
-# from .chain import chain as rag_chroma_chain
 
+# Configure logger for HTTP request logs
+http_logger = logging.getLogger('http_logger')
+http_logger.setLevel(logging.INFO)
+http_handler = TimedRotatingFileHandler('/var/log/nginx/llm_access.log')
+http_logger.addHandler(http_handler)
+http_format = logging.Formatter('%(asctime)s - %(levelname)s - HTTP Request: %(message)s')
+http_handler.setFormatter(http_format)
+
+# Configure logger for other logs
+conversation_logger = logging.getLogger('conversation_log')
+conversation_logger.setLevel(logging.INFO)
+conversation_log_handler = TimedRotatingFileHandler('/var/log/nginx/llm_conversation.log', when='midnight', interval=1, backupCount=7)
+conversation_logger.addHandler(conversation_log_handler)
+other_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+conversation_log_handler.setFormatter(other_format)
 
 class LlmRequest(BaseModel):
     input: str
@@ -51,9 +66,11 @@ def llm_engine(request : LlmRequest):
     
     llm_response = agent_executor.with_types(input_type=AgentInput, output_type=Output).invoke({"input": question})
     
-    logging.basicConfig(filename='/var/log/nginx/llm_access.log', level=logging.INFO)
+    # logging.basicConfig(filename='/var/log/nginx/llm_access.log', level=logging.INFO)
+    # logging.info(f"Session: {session} - Input: {question} - Output: {llm_response['output']} - Conversation Data {memory.chat_memory.messages}")    
 
-    logging.info(f"Session: {session} - Input: {question} - Output: {llm_response['output']} - Conversation Data {memory.chat_memory.messages}")    
+    conversation_logger.info(f"Session: {session} - Input: {question} - Output: {llm_response['output']} - Conversation Data {memory.chat_memory.messages}")
+    
 
     if 'function-name' in llm_response['output']:
         function_info = json.loads(llm_response['output'])
