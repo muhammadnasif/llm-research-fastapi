@@ -49,7 +49,7 @@ def llm_engine(request : LlmRequest):
     agent_executor = AgentExecutor(
             agent=agent_chain, tools=tools, verbose=True, memory=memory)
     
-    llm_response = agent_executor.with_types(input_type=AgentInput, output_type=Output).invoke({"input": question, "session_id":session})
+    llm_response = agent_executor.with_types(input_type=AgentInput, output_type=Output).invoke({"input": question})
 
     if 'function-name' in llm_response['output']:
         function_info = json.loads(llm_response['output'])
