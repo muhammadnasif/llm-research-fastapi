@@ -4,11 +4,11 @@ from langserve import add_routes
 from .llmEngine import agent_chain, global_session
 from .ToolGenerator import tools
 import json
-
 from pydantic import BaseModel
 from langchain.memory import ConversationBufferMemory
 from langchain.agents import AgentExecutor
 from typing import Any, List, Union
+import logging
 
 
 
@@ -50,6 +50,9 @@ def llm_engine(request : LlmRequest):
             agent=agent_chain, tools=tools, verbose=True, memory=memory)
     
     llm_response = agent_executor.with_types(input_type=AgentInput, output_type=Output).invoke({"input": question})
+    
+    logging.basicConfig(filename='/var/log/nginx/access.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info('Sample log message')
 
     if 'function-name' in llm_response['output']:
         function_info = json.loads(llm_response['output'])

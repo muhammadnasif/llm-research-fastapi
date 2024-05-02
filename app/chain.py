@@ -25,14 +25,6 @@ vectorstore = Chroma.from_documents(documents=all_splits,
                                     )
 retriever = vectorstore.as_retriever()
 
-# Embed a single document as a test
-# vectorstore = Chroma.from_texts(
-#     ["harrison worked at kensho"],
-#     collection_name="rag-chroma",
-#     embedding=OpenAIEmbeddings(),
-# )
-# retriever = vectorstore.as_retriever()
-
 # RAG prompt
 template = """Answer the question based only on the following context:
 {context}
