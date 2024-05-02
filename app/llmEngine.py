@@ -63,6 +63,7 @@ global session_id
 session_id = "" 
 # tools = [addNumberTool]
 
+llm = ChatOpenAI(temperature=0, api_key="")
 assistant_system_message = """You are a helpful assistant. \
 Use tools (only if necessary) to best answer the users questions."""
 prompt = ChatPromptTemplate.from_messages(
@@ -75,7 +76,7 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-llm_with_tools = llm.bind(functions=[convert_to_openai_function(t) for t in tools])
+llm_with_tools = llm.bind(functions=[format_tool_to_openai_function(t) for t in tools])
 
 
 # def _format_chat_history(chat_history: List[Tuple[str, str]]):
@@ -90,7 +91,8 @@ llm_with_tools = llm.bind(functions=[convert_to_openai_function(t) for t in tool
 chain = RunnableMap({
         "agent_scratchpad": lambda x: x["agent_scratchpad"],
         "chat_history": lambda x: x["chat_history"],
-        "input": lambda x: x["input"]
+        "input": lambda x: x["input"],
+        "session_id" : lambda x: x["session_id"]
     }) | prompt | llm_with_tools | OpenAIFunctionsAgentOutputParser()
 
 
