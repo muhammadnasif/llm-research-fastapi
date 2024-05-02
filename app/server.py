@@ -51,8 +51,9 @@ def llm_engine(request : LlmRequest):
     
     llm_response = agent_executor.with_types(input_type=AgentInput, output_type=Output).invoke({"input": question})
     
-    logging.basicConfig(filename='/var/log/nginx/llm_access.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    logging.info('Sample log message')
+    logging.basicConfig(filename='/var/log/nginx/llm_access.log', level=logging.INFO)
+
+    logging.info(f"Session: {session} - Input: {question} - Output: {llm_response['output']} - Conversation Data {memory.chat_memory.messages}")    
 
     if 'function-name' in llm_response['output']:
         function_info = json.loads(llm_response['output'])
